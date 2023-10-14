@@ -201,7 +201,7 @@ def item_delete(post_id):
         else:
             return f"Неизвестная ссылка"
     except:
-        return 'При удалении произошла ошибка'
+        return f'При удалении произошла ошибка'
 
 
 @first_app.route('/read/<int:post_id>/update', methods=['POST', 'GET'])
