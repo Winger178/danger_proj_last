@@ -11,7 +11,7 @@
             <h4 class="card-title pricing-card-title" style="text-align: center; "><small class="text-muted fw-light">{{ el.text }}</small></h4>
             <ul class="list-unstyled mt-3 mb-4">
               <li>Создано {{ el.publishing_date }}</li>
-                <h4 style="color: {{ el.color }}"><li>Кем: {{ el.login }}</li></h4>
+                <h1 style="color: {{ el.color }}" scope="row" class="text-start">{{ el.login }}</h1>
                 <li>Монета: {{ el.tags }}</li>
             </ul>
             <a href="/read/{{ el.post_id }}" class="w-100 btn btn-primary">Взглянуть</a>

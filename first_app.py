@@ -2,10 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, session, a
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user, user_logged_in
 from werkzeug.security import check_password_hash, generate_password_hash
-import os
+
 from datetime import datetime
-from hashlib import md5
-import requests
+
 import smtplib
 
 
@@ -32,6 +31,7 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     tags = db.Column(db.String(10), nullable=False)
     login = db.Column(db.String(64), nullable=False)
+    color = db.Column(db.String(7), nullable=False, default='#000000')
 
     def __repr__(self):
         return '<Post {}>'.format(self.title)
@@ -77,9 +77,9 @@ def search(tags):
 @first_app.route('/news')
 @login_required
 def news():
-    posts1 = Post.query.order_by(Post.text).all()
-    print(posts1)
-    #как отобразить никнеймы?
+    posts1 = Post.query.order_by(Post.publishing_date.desc()).all()
+
+
     return render_template('news.html', data=posts1)
 
 @manager.user_loader
@@ -175,7 +175,7 @@ def profile():
 @login_required
 def user(login):
     print(User.query.filter_by(login=login).first())
-    if current_user.get_id() == User.query.filter_by(login=login).first().get_id:
+    if current_user.get_id() == User.query.filter_by(login=login).first().get_id():
         return redirect('/profile')
     user_data = User.query.get(User.query.filter_by(login=login).first().get_id())
     return render_template('user.html', data6=user_data)
@@ -184,6 +184,7 @@ def user(login):
 @login_required
 def item_read(post_id):
     item_r = Post.query.get(post_id)
+
     print(item_r)
     return render_template('read.html', data2=item_r)
 
@@ -203,7 +204,17 @@ def item_delete(post_id):
     except:
         return f'При удалении произошла ошибка'
 
-
+'''def delete_post(post_id, ):
+    global db
+    import datetime
+    item_r = Post.query.get_or_404(post_id)
+    
+    try:
+        db.session.delete(item_r)
+        db.session.commit()
+        return f'Пост {post_id} удален'
+    return f'При удалении произошла ошибка'
+'''
 @first_app.route('/read/<int:post_id>/update', methods=['POST', 'GET'])
 @login_required
 def item_update(post_id):
@@ -234,8 +245,9 @@ def create():
         user_id = current_user.id
         tags_1 = request.form['tags']
         login = User.query.get(current_user.id).login
+        color = User.query.get(current_user.id).color
 
-        post = Post(title=title, text=text, publishing_date=publishing_date, user_id = user_id, tags=tags_1, login=login)
+        post = Post(title=title, text=text, publishing_date=publishing_date, user_id = user_id, tags=tags_1, login=login, color=color)
 
         try:
             db.session.add(post)
@@ -323,6 +335,8 @@ def admin():
 @first_app.route('/about')
 def about():
     return render_template('about.html')
+
+
 
 '''def connect_db():
     conn = sqlite3.connect(first_app.config['DATABASE'])
