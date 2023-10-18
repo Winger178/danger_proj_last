@@ -295,7 +295,7 @@ def send_mail(email, psw):
     sender_email = 'bloger147.178@gmail.com'
     password = 'ijfgwgvttsjthazw'
     subject = 'Your password'
-    body = "Your password from www.bhc.com: " + str(psw)
+    body = "Your password from https:/studplatform.com :" + str(psw)
     message = f'Subject: {subject}\n\n{body}'
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()
