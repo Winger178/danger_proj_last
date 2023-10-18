@@ -8,7 +8,7 @@ from datetime import datetime
 import smtplib
 
 
-first_app = Flask(__name__)
+first_app = Flask(__name__, static_folder='photos')
 first_app.config['SQLALCHEMY_BINDS'] = {
     'users': 'sqlite:///users.db',
     "posts": 'sqlite:///posts.db'}
@@ -45,6 +45,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(300), nullable=False)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     color = db.Column(db.String(7), nullable=False, default='#000000')
+    image = db.Column(db.String(15), nullable=False, default='Icon1.svg')
 
     def __repr__(self):
         return '<User {}>'.format(self.login)
@@ -222,13 +223,13 @@ def item_update(post_id):
     if request.method == 'POST':
         post_upd.title = request.form['title']
         post_upd.text = request.form['text']
-
+        post_upd.color = User.query.get(current_user.get_id()).color
         try:
             if post_upd.user_id == int(current_user.get_id()):
                 db.session.commit()
                 return redirect('/profile')
             else:
-                return f'Неизвестная ссылка'
+                return f'Займись делом, багхантер :3'
         except:
             return 'При удалении произошла ошибка'
     else:
@@ -263,6 +264,7 @@ def create():
 @login_required
 def prof_update(id):
     user_upd = User.query.get(id)
+    #user_posts =
     if request.method == 'POST':
         user_upd.login = request.form['login']
         user_upd.email = request.form['email']
