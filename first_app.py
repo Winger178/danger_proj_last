@@ -153,7 +153,8 @@ def register():
 def redirect_to_signin(response):
     if response.status_code == 401:
         return redirect(url_for('login_page') + '?next=' + request.url)
-
+    elif response.status_code == 404:
+        return redirect(url_for('page404'))
     return response
 
 '''@first_app.before_request
@@ -338,8 +339,9 @@ def admin():
 def about():
     return render_template('about.html')
 
-
-
+@first_app.route('/page404')
+def page404():
+    return render_template('page404.html')
 '''def connect_db():
     conn = sqlite3.connect(first_app.config['DATABASE'])
     conn.row_factory = sqlite3.Row
