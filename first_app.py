@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session, abort, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user, user_logged_in
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from datetime import datetime
@@ -29,6 +29,7 @@ class Post(db.Model):
     text = db.Column(db.Text, nullable=False)
     publishing_date = db.Column(db.String(18), default=str(datetime.now))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
     tags = db.Column(db.String(10), nullable=False)
     login = db.Column(db.String(64), nullable=False)
     color = db.Column(db.String(7), nullable=False, default='#000000')
@@ -36,6 +37,10 @@ class Post(db.Model):
     def __repr__(self):
         return '<Post {}>'.format(self.title)
 
+user_post = db.Table("user_post",
+                     db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+                     db.Column('post_id', db.Integer(), db.ForeignKey('post.post_id'))
+                     )
 
 class User(db.Model, UserMixin):
     __bind_key__ = 'users'
@@ -71,15 +76,15 @@ def index():
     return render_template('index.html', datas=user_s)
     #, values=values)
 
-@first_app.route('/search/<tags>/')
-def search(tags):
-    tag_posts = Post.query.filter_by(tags=tags).all()
+#@first_app.route('/search/<tags>/')
+#def search(tags):
+    #pass
+    #tag_posts = Post.query.filter_by(tags=tags).all()
 
 @first_app.route('/news')
 @login_required
 def news():
     posts1 = Post.query.order_by(Post.publishing_date.desc()).all()
-
 
     return render_template('news.html', data=posts1)
 
@@ -151,11 +156,25 @@ def register():
 
 @first_app.after_request
 def redirect_to_signin(response):
+
     if response.status_code == 401:
         return redirect(url_for('login_page') + '?next=' + request.url)
-    elif response.status_code == 404:
+
+'''@first_app.after_request
+def bad_responses(response):
+    if response.status_code == 404:
         return redirect(url_for('page404'))
-    return response
+    elif response.status_code == 500:
+        return redirect(url_for('page500'))
+    elif response.status_code == 503:
+        return redirect(url_for('page503'))
+
+@first_app.after_request
+def another_bad_responses(response):
+    if (response.status_code // 100) == 5:
+        return redirect(url_for('page5xx'))
+    elif (response.status_code // 100) == 4:
+        return redirect(url_for('page4xx'))'''
 
 '''@first_app.before_request
 def before_request():
@@ -342,6 +361,10 @@ def about():
 @first_app.route('/page404')
 def page404():
     return render_template('page404.html')
+
+@first_app.route('/page500')
+def page500():
+    return render_template('page500.html')
 '''def connect_db():
     conn = sqlite3.connect(first_app.config['DATABASE'])
     conn.row_factory = sqlite3.Row
